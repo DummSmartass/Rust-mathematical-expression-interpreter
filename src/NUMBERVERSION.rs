@@ -1,9 +1,13 @@
-use once_cell::sync::Lazy;
-use regex::Regex;
+
+use std::string::String;
 use std::collections::HashMap;
-use std::io::Result;
 use std::str::FromStr;
-use std::sync::{Mutex, RwLock};
+use std::io;
+use std::io::Result;
+use regex::Regex;
+use once_cell::sync::Lazy;
+use lazy_static::lazy_static;
+use std::sync::Mutex;
 
 type MathFunc = fn(&[f64]) -> Vec<f64>;
 
@@ -11,32 +15,28 @@ fn a(args: &[f64]) -> Vec<f64> {
     if args.len() != 2 {
         panic!("Function 'a' expects exactly 2 arguments");
     }
-    vec![args[0] + args[1]]
+    let result = args[0] + args[1];
+    vec![result]
 }
 
 fn b(args: &[f64]) -> Vec<f64> {
     if args.len() != 2 {
         panic!("Function 'b' expects exactly 2 arguments");
     }
-    vec![args[0] * args[1]]
+    let result = args[0] * args[1];
+    vec![result]
 }
 
 fn c(args: &[f64]) -> Vec<f64> {
     if args.len() != 3 {
         panic!("Function 'c' expects exactly 3 arguments");
     }
-    vec![args[0] + args[1] * args[2]]
+    let result = args[0] + args[1] * args[2];
+    vec![result]
 }
 
 fn e(_args: &[f64]) -> Vec<f64> {
     vec![1.0, 2.0, 3.0, 4.0, 5.0]
-}
-
-fn max(args: &[f64]) -> Vec<f64> {
-    if args.is_empty() {
-        panic!("Function 'max' expects at least one argument");
-    }
-    vec![args.iter().cloned().reduce(|a, b| a.max(b)).unwrap()]
 }
 
 static FUNCTIONS: Lazy<HashMap<&str, MathFunc>> = Lazy::new(|| {
@@ -49,13 +49,9 @@ static FUNCTIONS: Lazy<HashMap<&str, MathFunc>> = Lazy::new(|| {
     map
 });
 
-lazy_static::lazy_static! {
-    static ref TEMP_FUNCTIONS: RwLock<HashMap<String, TempFun>> = RwLock::new(HashMap::new());
-    //static ref TEMP_FUNCTIONS: RwLock<HashMap<String, TempFun>> = RwLock::new(HashMap::new());
-    static ref INTERPRET_REGEX: Regex = Regex::new(r"(\w+)\(([^()]*)\)(?:\[(.*)\])?").unwrap();
-    static ref TEMP_FUNC_REGEXES: RwLock<HashMap<String, Regex>> = RwLock::new(HashMap::new());
+lazy_static! {
+    static ref TEMP_FUNCTIONS: Mutex<HashMap<String, TempFun>> = Mutex::new(HashMap::new());
 }
-
 
 pub struct TempFun {
     operations: String,
@@ -64,14 +60,22 @@ pub struct TempFun {
 
 impl TempFun {
     pub fn new(operations: String, variables: Vec<String>) -> Self {
-        TempFun { operations, variables }
+        TempFun {
+            operations,
+            variables,
+        }
     }
 }
 
-fn add_temp_fun(func: &str) {
-    let mut map = TEMP_FUNCTIONS.write().unwrap();
+
+fn add_temp_fun(func: &str)
+{
+    let mut map = TEMP_FUNCTIONS.lock().unwrap();
+
+    //doublex+y+1=a(a(x,x),a(y,1));(x,y)
 
     let segments: Vec<&str> = func.split(|c| c == '=' || c == ';').collect();
+
     let name = segments.get(0).unwrap();
     let operations = segments.get(1).unwrap();
     let variable_string = segments.get(2).unwrap();
@@ -83,15 +87,35 @@ fn add_temp_fun(func: &str) {
         .map(String::from)
         .collect();
 
+    //println!("Name: {}", name);
+    //println!("Operations: {}", operations);
+    //println!("Variable String: {}", variable_string);
+    //println!("Variables: {:?}", variables);
+
     map.insert(name.to_string(), TempFun::new(operations.to_string(), variables));
+
 }
 
 
+fn max(args: &[f64]) -> Vec<f64> {
+    let max_value = args.iter().copied().reduce(f64::max);
+    match max_value {
+        Some(max_value) => args.iter()
+            .copied()
+            .filter(|&x| x.is_nan() || x == max_value)
+            .collect(),
+        None => Vec::new(),
+    }
+}
+
+
+
 fn interpret(input: &str) -> Result<String> {
-    let re = &INTERPRET_REGEX;
+    let re = Regex::new(r"(\w+)\(([^()]*)\)(?:\[(.*)\])?").unwrap();
     let mut input = input.to_string().replace(" ", "").replace("\t", "").replace("\n", "");
 
-    while let Some(captures) = re.captures(&input) {
+    while let Some(captures) = re.captures(&input)
+    {
         while let Some(captures) = re.captures(&input) {
             let func_name = captures.get(1).unwrap().as_str();
             let args_str = captures.get(2).unwrap().as_str();
@@ -101,6 +125,7 @@ fn interpret(input: &str) -> Result<String> {
                 args_str
                     .split(',')
                     .map(|s| {
+                        //println!("Before mapping: >{}<", s);
                         interpret(s)
                             .unwrap_or_else(|_| s.to_string())
                             .parse::<f64>()
@@ -110,7 +135,12 @@ fn interpret(input: &str) -> Result<String> {
             };
             let result = match FUNCTIONS.get(func_name) {
                 Some(func) => func(&args),
-                None => break,
+                None => {
+                    // Return the input string as it is if the function does not exist
+                    //return Ok(input);
+                    //println!("HERE IDOT");
+                    break;
+                }
             };
 
             let result_ref = &result;
@@ -119,7 +149,8 @@ fn interpret(input: &str) -> Result<String> {
                     .split(',')
                     .map(|i| {
                         let index = i.parse::<usize>().unwrap();
-                        result_ref[index]
+                        let selected_element = result_ref[index];
+                        selected_element
                     })
                     .collect()
             });
@@ -130,16 +161,24 @@ fn interpret(input: &str) -> Result<String> {
                 .collect::<Vec<String>>()
                 .join(",");
             input = input.replacen(&captures[0], &replace_str, 1);
+            //println!(">1>>>>>{}", input);
         }
+        //println!(">2>>>>>>{}", input);
         input = replace_temp_func_calls(input.as_str());
+        //println!(">3>>>>>>{}", input);
+
     }
 
     Ok(input)
 }
 
+
+
 fn replace_temp_func_calls(input: &str) -> String {
-    let map = TEMP_FUNCTIONS.read().unwrap();
+    let map = TEMP_FUNCTIONS.lock().unwrap();
     let mut output = input.to_string();
+    //println!("{}",output);
+
 
     let mut pattern_strings: Vec<String> = Vec::new();
     for (name, _) in map.iter() {
@@ -147,27 +186,27 @@ fn replace_temp_func_calls(input: &str) -> String {
         pattern_strings.push(format!(r"{}[a-zA-Z0-9_]*(?:\((?:[^()]+|(?R))*\))", escaped_name));
     }
 
+    //println!("{:?}",pattern_strings);
+
     let combined_pattern = pattern_strings.join("|");
     let re = Regex::new(&combined_pattern).unwrap();
 
     let mut previous_output = String::new();
     while output != previous_output {
         previous_output = output.clone();
-        output = re
-            .replace_all(&output, |caps: &regex::Captures| {
-                let cap = caps.get(0).unwrap().as_str();
-                let name = cap.split('(').next().unwrap();
-                let temp_fun = map.get(name).unwrap();
-                let args: Vec<&str> = cap[name.len() + 1..cap.len() - 1].split(',').collect();
-                let mut operation = temp_fun.operations.clone();
+        output = re.replace_all(&output, |caps: &regex::Captures| {
+            let cap = caps.get(0).unwrap().as_str();
+            let name = cap.split('(').next().unwrap();
+            let temp_fun = map.get(name).unwrap();
+            let args: Vec<&str> = cap[name.len() + 1..cap.len() - 1].split(',').collect();
+            let mut operation = temp_fun.operations.clone();
 
-                for (var, arg) in temp_fun.variables.iter().zip(args.iter()) {
-                    let var_pattern = Regex::new(&format!(r"\b{}\b", regex::escape(var))).unwrap();
-                    operation = var_pattern.replace_all(&operation, *arg).to_string();
-                }
-                operation
-            })
-            .to_string();
+            for (var, arg) in temp_fun.variables.iter().zip(args.iter()) {
+                let var_pattern = Regex::new(&format!(r"\b{}\b", regex::escape(var))).unwrap();
+                operation = var_pattern.replace_all(&operation, *arg).to_string();
+            }
+            operation
+        }).to_string();
     }
 
     output
