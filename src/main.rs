@@ -3,13 +3,14 @@ use std::collections::HashMap;
 use once_cell::sync::Lazy;
 
 enum VariableType {
-    value(f64),
-    variable(String),
-    basicFunWVariables(BasicFunWVariables),
-    customFunWVariables(CustomFunWVariables)
+    Value(f64),
+    Variable(String),
+    BasicFunWVariables(BasicFunWVariables),
+    CustomFunWVariables(CustomFunWVariables),
 }
 
 type BasicFunc = fn(&[f64]) -> Vec<f64>;
+
 fn a(args: &[f64]) -> Vec<f64> {
     if args.len() != 2 {
         panic!("Function 'a' expects exactly 2 arguments");
@@ -25,10 +26,9 @@ static FUNCTIONS: Lazy<HashMap<&'static str, BasicFunc>> = Lazy::new(|| {
 
 struct CustomFunc {
     primary_fun: BasicFunc,
-    funVariables: Vec<VariableType>,
-    listElements: Vec<Vec<i64>>,
-    provVariableNames: Vec<String>,
-    provVariableValues: Vec<f64>
+    fun_variables: Vec<VariableType>,
+    list_elements: Vec<Vec<i64>>,
+    prov_variable_names: Vec<String>,
 }
 
 struct BasicFunWVariables {
@@ -60,57 +60,58 @@ impl CustomFunWVariables {
 }
 
 impl CustomFunc {
-    fn new(primary_fun: BasicFunc, funVariables: Vec<VariableType>,listElements: Vec<Vec<i64>>,provVariableNames: Vec<String>,    provVariableValues: Vec<f64>) -> CustomFunc
-    {
-        CustomFunc { primary_fun, funVariables,listElements,provVariableNames,provVariableValues}
+    fn new(
+        primary_fun: BasicFunc,
+        fun_variables: Vec<VariableType>,
+        list_elements: Vec<Vec<i64>>,
+        prov_variable_names: Vec<String>,
+    ) -> CustomFunc {
+        CustomFunc {
+            primary_fun,
+            fun_variables,
+            list_elements,
+            prov_variable_names,
+        }
     }
 
-    fn run(&self) {
-        let mapped_prov_variables: HashMap<String, f64> = self.provVariableNames.iter()
-            .zip(self.provVariableValues.iter())
+    fn run(&self, prov_variable_values: Vec<f64>) -> Vec<f64> {
+        let mapped_prov_variables: HashMap<String, f64> = self
+            .prov_variable_names
+            .iter()
+            .zip(prov_variable_values.iter())
             .map(|(k, v)| (k.clone(), *v))
             .collect();
 
+        let mut processed_variables: Vec<f64> = Vec::new();
 
-        let mut processed_variables: Vec<_> = Vec::<f64>::new();
-
-        for funVariable in &self.funVariables
-        {
-            match funVariable {
-                VariableType::value(value) => processed_variables.push(*value),
-                VariableType::variable(variable) => {
+        for fun_variable in &self.fun_variables {
+            match fun_variable {
+                VariableType::Value(value) => processed_variables.push(*value),
+                VariableType::Variable(variable) => {
                     let value = mapped_prov_variables.get(variable).unwrap();
                     processed_variables.push(*value);
-                },
-                VariableType::basicFunWVariables(bFunc) => {
-                    //bFunc
-                },
-                VariableType::customFunWVariables(cFunc) => {
-                    //cFunc
-                },
+                }
+                VariableType::BasicFunWVariables(b_func) => {
+                    // Handle BasicFunWVariables here if necessary
+                }
+                VariableType::CustomFunWVariables(c_func) => {
+                    // Handle CustomFunWVariables here if necessary
+                }
             }
         }
+
+        println!("Processed variables: {:?}", processed_variables);
+        (self.primary_fun)(&processed_variables)
     }
-    //dodatkowa lista list określające liczności
 }
 
 fn main() {
     // Define some variables
-    let value = VariableType::value(3.14);
-    let variable = VariableType::variable("x".to_string());
-
-    // Create an instance of BasicFunWVariables
-    let basic_func = BasicFunWVariables::new(a, vec![]); // Pass your BasicFunc and Vec<VariableType> here
-
-    // Create a variable of type VariableType::basicFunWVariables
-    let basic_func_variable = VariableType::basicFunWVariables(basic_func);
+    let value1 = VariableType::Value(3.14);
+    let value2 = VariableType::Variable("x".to_string());
 
     // Create a vector of variables
-    let variables = vec![value, variable, basic_func_variable];
-
-    let mut map = HashMap::new();
-    map.insert("key1".to_string(), 1.0);
-    map.insert("key2".to_string(), 2.0);
+    let variables = vec![value1, value2];
 
     // Create an instance of CustomFunc
     let my_instance = CustomFunc::new(
@@ -118,10 +119,9 @@ fn main() {
         variables,
         vec![vec![0], vec![0], vec![0]],
         vec![String::from("x"), String::from("y"), String::from("z")],
-        vec![1.0,2.0,3.0,4.0]
     );
 
     // Run the instance
-    my_instance.run();
+    let result = my_instance.run(vec![1.0, 2.0, 3.0, 4.0]);
+    println!("{:?}", result);
 }
-
