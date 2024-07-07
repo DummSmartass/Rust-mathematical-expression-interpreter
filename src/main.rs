@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::time::Instant;
 use once_cell::sync::Lazy;
 
 enum VariableType<'a> {
@@ -182,57 +183,396 @@ impl<'a> CustomFunc<'a> {
 
         let processed_variables = self.process_variables(&mapped_prov_variables, &self.fun_variables);
 
-        println!("Processed variables: {:?}", processed_variables);
+        //println!("Processed variables: {:?}", processed_variables);
         (self.primary_fun)(&processed_variables)
     }
 }
 
 fn main() {
+
+    let value1 = VariableType::Variable("x");
     let value2 = VariableType::Variable("y");
-    let variables1 = vec![&value2, &value2];
+    let variables1 = vec![&value1, &value2];
     let my_instance1 = CustomFunc::new(
         sum,
-        variables1, // Pass variables1 without cloning
+        variables1,
         vec![],
-        vec!["x", "y"],
+        vec!["x","y"],
     );
 
-    let result = my_instance1.run(vec![1.0, 2.0]);
+    let result = my_instance1.run(vec![1.0, 1.0]);
     println!("{:?}", result);
 
-    let value1 = VariableType::BasicFunWVariables(BasicFunWVariables::new(getSeries, vec![VariableType::Value(5.0)]));
-    let value2 = VariableType::Variable("y");
-    let variables2 = vec![&value1, &value2];
-    let my_instance2 = CustomFunc::new(
-        dif,
-        variables2, // Pass variables2 without cloning
-        vec![vec![0]],
-        vec!["x", "y"],
-    );
-    let result = my_instance2.run(vec![1.0, 2.0]);
-    println!("{:?}", result);
+
 
     let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
-    let value2 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance2, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
-    let variables = vec![&value1, &value2];
-    let my_instance3 = CustomFunc::new(
-        mul,
-        variables,
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
         vec![],
-        vec!["x", "y"],
+        vec!["x","y"],
     );
-    let result = my_instance3.run(vec![1.0, 2.0]);
+
+    let result = my_instance1.run(vec![1.0,1.0]);
     println!("{:?}", result);
 
-    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance3, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
-    let value2 = VariableType::Value(3.0);
-    let variables = vec![&value1, &value2];
-    let my_instance4 = CustomFunc::new(
-        div,
-        variables,
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
         vec![],
-        vec!["x", "y"],
+        vec!["x","y"],
     );
-    let result = my_instance4.run(vec![1.0, 2.0]);
+
+    let result = my_instance1.run(vec![1.0,1.0]);
     println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+
+
+
+    let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    let variables1 = vec![&value1,&value1];
+    let my_instance1 = CustomFunc::new(
+        sum,
+        variables1,
+        vec![],
+        vec!["x","y"],
+    );
+
+
+
+
+    let start = Instant::now();
+
+    let result = my_instance1.run(vec![1.0,1.0]);
+    println!("{:?}", result);
+
+    let duration = start.elapsed();
+
+    println!("Time taken by fun1(): {:?}", duration);
+
+
+
+
+
+    // let value2 = VariableType::Variable("y");
+    // let variables1 = vec![&value2, &value2];
+    // let my_instance1 = CustomFunc::new(
+    //     sum,
+    //     variables1, // Pass variables1 without cloning
+    //     vec![],
+    //     vec!["y"],
+    // );
+    //
+    // let result = my_instance1.run(vec![1.0, 2.0]);
+    // println!("{:?}", result);
+    //
+    // let value1 = VariableType::BasicFunWVariables(BasicFunWVariables::new(getSeries, vec![VariableType::Value(5.0)]));
+    // let variables2 = vec![&value1];
+    // let my_instance2 = CustomFunc::new(
+    //     sum,
+    //     variables2, // Pass variables2 without cloning
+    //     vec![vec![1,0]],
+    //     vec![],
+    // );
+    // let result = my_instance2.run(vec![]);
+    // println!("{:?}", result);
+    //
+    // let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance1, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    // let value2 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance2, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    // let variables = vec![&value1, &value2];
+    // let my_instance3 = CustomFunc::new(
+    //     mul,
+    //     variables,
+    //     vec![],
+    //     vec!["x"],
+    // );
+    // let result = my_instance3.run(vec![1.0, 2.0]);
+    // println!("{:?}", result);
+    //
+    // let value1 = VariableType::CustomFunWVariables(CustomFunWVariables::new(&my_instance3, vec![VariableType::Variable("x"), VariableType::Variable("y")]));
+    // let value2 = VariableType::Value(3.0);
+    // let variables = vec![&value1, &value2];
+    // let my_instance4 = CustomFunc::new(
+    //     div,
+    //     variables,
+    //     vec![],
+    //     vec!["x"],
+    // );
+    // let result = my_instance4.run(vec![1.0, 2.0]);
+    // println!("{:?}", result);
+
 }
+//zmienne globalne
+//interpreter
+//reorganize withought chaning inner workings
