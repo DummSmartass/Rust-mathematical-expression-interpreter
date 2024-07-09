@@ -1,6 +1,9 @@
 use std::collections::HashMap;
+use std::rc::Rc;
+use once_cell::sync::Lazy;
 use crate::basic_functions::BasicFunc;
 use crate::variable_types::{VariableType, BasicFunWVariables};
+
 
 pub struct CustomFunc<'a> {
     primary_func: BasicFunc,
@@ -8,6 +11,10 @@ pub struct CustomFunc<'a> {
     picked_elements: Vec<Vec<usize>>,
     provided_variable_names: Vec<&'a str>,
 }
+
+pub(crate) static mut custom_func_map: Lazy<HashMap<String, Rc<CustomFunc>>> = Lazy::new(|| {
+    HashMap::new()
+});
 
 impl<'a> CustomFunc<'a> {
     pub fn new(

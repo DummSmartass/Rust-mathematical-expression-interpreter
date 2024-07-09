@@ -1,6 +1,7 @@
 use crate::basic_functions::BasicFunc;
 use crate::custom_functions::CustomFunc;
 
+
 pub enum VariableType<'a> {
     Value(f64),
     Variable(&'a str),
