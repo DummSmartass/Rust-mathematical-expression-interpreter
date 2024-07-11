@@ -1,21 +1,23 @@
+use std::sync::Arc;
 use crate::basic_functions::BasicFunc;
 use crate::custom_functions::CustomFunc;
 
-
-pub enum VariableType<'a> {
+#[derive(Clone)]
+pub enum VariableType {
     Value(f64),
-    Variable(&'a str),
-    BasicFunWVariables(BasicFunWVariables<'a>),
-    CustomFunWVariables(CustomFunWVariables<'a>),
+    Variable(String),
+    BasicFunWVariables(Arc<BasicFunWVariables>),
+    CustomFunWVariables(Arc<CustomFunWVariables>),
 }
 
-pub struct BasicFunWVariables<'a> {
+#[derive(Clone)]
+pub struct BasicFunWVariables {
     pub basic_func: BasicFunc,
-    pub func_variables: Vec<VariableType<'a>>,
+    pub func_variables: Vec<VariableType>,
 }
 
-impl<'a> BasicFunWVariables<'a> {
-    pub fn new(basic_func: BasicFunc, func_variables: Vec<VariableType<'a>>) -> Self {
+impl BasicFunWVariables {
+    pub fn new(basic_func: BasicFunc, func_variables: Vec<VariableType>) -> Self {
         Self {
             basic_func,
             func_variables,
@@ -23,13 +25,14 @@ impl<'a> BasicFunWVariables<'a> {
     }
 }
 
-pub struct CustomFunWVariables<'a> {
-    pub custom_func: &'a CustomFunc<'a>,
-    pub func_variables: Vec<VariableType<'a>>,
+#[derive(Clone)]
+pub struct CustomFunWVariables {
+    pub custom_func: Arc<CustomFunc>,
+    pub func_variables: Vec<VariableType>,
 }
 
-impl<'a> CustomFunWVariables<'a> {
-    pub fn new(custom_func: &'a CustomFunc<'a>, func_variables: Vec<VariableType<'a>>) -> Self {
+impl CustomFunWVariables {
+    pub fn new(custom_func: Arc<CustomFunc>, func_variables: Vec<VariableType>) -> Self {
         Self {
             custom_func,
             func_variables,

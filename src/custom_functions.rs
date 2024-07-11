@@ -1,28 +1,27 @@
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 use once_cell::sync::Lazy;
-use crate::basic_functions::BasicFunc;
-use crate::variable_types::{VariableType, BasicFunWVariables};
+use crate::basic_functions::{BASIC_FUNCTIONS, BasicFunc};
+use crate::variable_types::{VariableType, BasicFunWVariables, CustomFunWVariables};
 
-
-pub struct CustomFunc<'a> {
+pub struct CustomFunc {
     primary_func: BasicFunc,
-    func_variables: Vec<&'a VariableType<'a>>,
+    func_variables: Vec<VariableType>,
     picked_elements: Vec<Vec<usize>>,
-    provided_variable_names: Vec<&'a str>,
+    provided_variable_names: Vec<String>,
 }
 
-pub(crate) static mut custom_func_map: Lazy<HashMap<String, Rc<CustomFunc>>> = Lazy::new(|| {
+pub(crate) static mut CUSTOM_FUNC_MAP: Lazy<HashMap<String, Arc<CustomFunc>>> = Lazy::new(|| {
     HashMap::new()
 });
 
-impl<'a> CustomFunc<'a> {
+impl CustomFunc {
     pub fn new(
         primary_func: BasicFunc,
-        func_variables: Vec<&'a VariableType<'a>>,
+        func_variables: Vec<VariableType>,
         picked_elements: Vec<Vec<usize>>,
-        provided_variable_names: Vec<&'a str>,
-    ) -> CustomFunc<'a> {
+        provided_variable_names: Vec<String>,
+    ) -> CustomFunc {
         CustomFunc {
             primary_func,
             func_variables,
@@ -33,8 +32,8 @@ impl<'a> CustomFunc<'a> {
 
     fn process_variables(
         &self,
-        mapped_provided_variables: &HashMap<&'a str, f64>,
-        func_variables: &[&VariableType<'a>],
+        mapped_provided_variables: &HashMap<String, f64>,
+        func_variables: &[VariableType],
     ) -> Vec<f64> {
         let mut processed_variables = Vec::new();
 
@@ -49,7 +48,7 @@ impl<'a> CustomFunc<'a> {
                 VariableType::BasicFunWVariables(b_func) => {
                     let nested_processed_variables = self.process_variables(
                         mapped_provided_variables,
-                        &b_func.func_variables.iter().collect::<Vec<_>>(),
+                        &b_func.func_variables,
                     );
                     let results = (b_func.basic_func)(&nested_processed_variables);
 
@@ -66,15 +65,14 @@ impl<'a> CustomFunc<'a> {
                         } else {
                             processed_variables.extend(results);
                         }
-                    }
-                    else {
+                    } else {
                         processed_variables.extend(results);
                     }
                 }
                 VariableType::CustomFunWVariables(c_func) => {
                     let nested_processed_variables = self.process_variables(
                         mapped_provided_variables,
-                        &c_func.func_variables.iter().collect::<Vec<_>>(),
+                        &c_func.func_variables,
                     );
                     let results = c_func.custom_func.run(nested_processed_variables);
 
@@ -104,14 +102,18 @@ impl<'a> CustomFunc<'a> {
     }
 
     pub fn run(&self, provided_variable_values: Vec<f64>) -> Vec<f64> {
-        let mapped_provided_variables: HashMap<&'a str, f64> = self
+        let mapped_provided_variables: HashMap<String, f64> = self
             .provided_variable_names
             .iter()
             .zip(provided_variable_values.iter())
-            .map(|(&k, &v)| (k, v))
+            .map(|(k, &v)| (k.clone(), v))
             .collect();
 
         let processed_variables = self.process_variables(&mapped_provided_variables, &self.func_variables);
         (self.primary_func)(&processed_variables)
     }
 }
+
+// pub fn get_custom_functions() -> &'static HashMap<&'static str, CustomFunc> {
+//     &CUSTOM_FUNC_MAP
+// }

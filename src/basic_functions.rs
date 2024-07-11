@@ -34,6 +34,11 @@ fn divide(args: &[f64]) -> Vec<f64> {
     vec![args[0] / args[1]]
 }
 
+fn pass(args: &[f64]) -> Vec<f64> {
+    args.to_vec()
+}
+
+
 fn get_series(args: &[f64]) -> Vec<f64> {
     if args.len() != 1 {
         panic!("Function 'get_series' expects exactly 1 argument");
@@ -52,9 +57,10 @@ pub static BASIC_FUNCTIONS: Lazy<HashMap<&'static str, BasicFunc>> = Lazy::new(|
     basic_functions.insert("multiply", multiply as BasicFunc);
     basic_functions.insert("divide", divide as BasicFunc);
     basic_functions.insert("get_series", get_series as BasicFunc);
+    basic_functions.insert("pass", pass as BasicFunc);
     basic_functions
 });
 
-pub fn get_basic_functions() -> &'static HashMap<&'static str, BasicFunc> {
-    &BASIC_FUNCTIONS
-}
+// pub fn get_basic_functions() -> &'static HashMap<&'static str, BasicFunc> {
+//     &BASIC_FUNCTIONS
+// }
