@@ -4,18 +4,20 @@ mod variable_types;
 
 use basic_functions::BasicFunc;
 use custom_functions::CustomFunc;
-use variable_types::{VariableType, CustomFunWVariables, BasicFunWVariables};
+use variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
 use std::sync::Arc;
 use std::collections::HashMap;
 use std::ptr::null;
+use eval::Value;
 use once_cell::sync::Lazy;
 use crate::basic_functions::BASIC_FUNCTIONS;
 use crate::custom_functions::CUSTOM_FUNC_MAP;
 
-unsafe fn recurvive_variable_creator<'a>(recepie: &'a str) -> VariableType {
-    if let Some(pos) = recepie.find('(') {
-        let function_name = &recepie[..pos];
-        let args_str = &recepie[pos + 1..recepie.len() - 1];
+/// Funkcja rekurencyjna tworząca typ zmiennej na podstawie ciągu znaków
+unsafe fn recursive_variable_creator(recipe: &str) -> VariableType {
+    if let Some(pos) = recipe.find('(') {
+        let function_name = &recipe[..pos];
+        let args_str = &recipe[pos + 1..recipe.len() - 1];
 
         let mut args = Vec::new();
         let mut current_arg = String::new();
@@ -46,68 +48,138 @@ unsafe fn recurvive_variable_creator<'a>(recepie: &'a str) -> VariableType {
         }
 
         let mut parsed_variables = Vec::new();
-
         for arg in args {
-            parsed_variables.push(recurvive_variable_creator(&arg));
+            parsed_variables.push(recursive_variable_creator(&arg));
         }
 
         if let Some(&basic_func) = BASIC_FUNCTIONS.get(function_name) {
-            VariableType::BasicFunWVariables(Arc::new(BasicFunWVariables::new(basic_func, parsed_variables)))
+            VariableType::BasicFuncWithVars(Arc::new(BasicFuncWithVars::new(basic_func, parsed_variables)))
         } else if let Some(custom_func) = CUSTOM_FUNC_MAP.get(function_name) {
-            VariableType::CustomFunWVariables(Arc::new(CustomFunWVariables::new(Arc::clone(custom_func), parsed_variables)))
+            VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(Arc::clone(custom_func), parsed_variables)))
         } else {
             panic!("Unknown function: {}", function_name);
         }
     } else {
-        if let Ok(num) = recepie.replace(")", "").parse::<f64>() {
+        if let Ok(num) = recipe.replace(")", "").parse::<f64>() {
             VariableType::Value(num)
         } else {
-            VariableType::Variable(recepie.replace(")", "").to_string())
+            VariableType::Variable(recipe.replace(")", "").to_string())
         }
     }
 }
 
-unsafe fn interpreat<'a>(fullEquasion: &str) -> Arc<CustomFunc>
-{
-    let parts:Vec<&str> = fullEquasion.split(|c: char| c == '=' || c == ';').collect();
-    if parts.len() != 3 {
-        panic!("Invalid input format. Expected format: name=expression;variables");
-    }
+/// Funkcja interpretująca pełne równanie i tworząca niestandardową funkcję
+unsafe fn interpret(full_equation: &str) -> Arc<CustomFunc> {
+    let parts: Vec<&str> = full_equation.split(|c: char| c == '=' || c == ';').collect();
+    let name: String;
+    let recipe: String;
+    let variable_names: Vec<String>;
+    let function_variable_type: VariableType;
 
-    let name:String = parts[0].trim().to_string();
-    let recepie: String = ("pass(".to_string() + parts[1].trim() + ")");
-    let variableNames: Vec<String> = parts[2].trim().split(",").map(String::from).collect();
+    if(full_equation.contains("=") & full_equation.contains(";"))
+    {
+        name = parts[0].trim().to_string();
+        recipe = format!("pass({})", parts[1].trim());
+        variable_names = parts[2].trim().split(',').map(String::from).collect();
 
-    let functionVariableType:VariableType = recurvive_variable_creator(&recepie);
+        function_variable_type = recursive_variable_creator(&recipe);
 
-
-    match functionVariableType {
-        VariableType::BasicFunWVariables(basic_func_wrapper) => {
-
+        if let VariableType::BasicFuncWithVars(basic_func_wrapper) = function_variable_type {
             let basic_func = basic_func_wrapper.basic_func;
             let variables = basic_func_wrapper.func_variables.clone();
 
             let custom_func = Arc::new(CustomFunc::new(
                 basic_func,
                 variables,
-                variableNames,
+                variable_names,
             ));
 
             CUSTOM_FUNC_MAP.insert(name, custom_func.clone());
             custom_func
+        } else {
+            panic!("Unexpected error1 in creating custom function");
         }
-        _ => {
-            panic!("I geniuanly dont know what you did to get this error");
+    }
+    else if full_equation.contains("=")
+    {
+        name = parts[0].trim().to_string();
+        recipe = format!("pass({})", parts[1].trim());
+        variable_names = Vec::new();
+
+        function_variable_type = recursive_variable_creator(&recipe);
+
+        if let VariableType::BasicFuncWithVars(basic_func_wrapper) = function_variable_type {
+            let basic_func = basic_func_wrapper.basic_func;
+            let variables = basic_func_wrapper.func_variables.clone();
+
+            let custom_func = Arc::new(CustomFunc::new(
+                basic_func,
+                variables,
+                variable_names,
+            ));
+
+            CUSTOM_FUNC_MAP.insert(name, custom_func.clone());
+            custom_func
+        } else {
+            panic!("Unexpected error2 in creating custom function");
+        }
+    }
+    else if full_equation.contains(";")
+    {
+        recipe = format!("pass({})", parts[0].trim());
+        variable_names = parts[1].trim().split(',').map(String::from).collect();
+
+        function_variable_type = recursive_variable_creator(&recipe);
+
+        if let VariableType::BasicFuncWithVars(basic_func_wrapper) = function_variable_type {
+            let basic_func = basic_func_wrapper.basic_func;
+            let variables = basic_func_wrapper.func_variables.clone();
+
+            let custom_func = Arc::new(CustomFunc::new(
+                basic_func,
+                variables,
+                variable_names,
+            ));
+
+            custom_func
+        } else {
+            panic!("Unexpected error3 in creating custom function");
+        }
+    }
+    else
+    {
+        recipe = format!("pass({})", parts[0].trim());
+
+        function_variable_type = recursive_variable_creator(&recipe);
+        variable_names = Vec::new();
+
+        if let VariableType::BasicFuncWithVars(basic_func_wrapper) = function_variable_type {
+            let basic_func = basic_func_wrapper.basic_func;
+            let variables = basic_func_wrapper.func_variables.clone();
+
+            let custom_func = Arc::new(CustomFunc::new(
+                basic_func,
+                variables,
+                variable_names,
+            ));
+
+            custom_func
+        } else {
+            panic!("Unexpected error4 in creating custom function");
         }
     }
 }
 
+
+
 fn main() {
     unsafe {
-        interpreat("a=sum(sum(1,sum(x,y)),multiply(x,y));x,y");
-        println!("RESULT:{:?}",CUSTOM_FUNC_MAP.get("a").unwrap().run(vec![1.0, 2.0]));
+        //interpret("a=sum(sum(1,sum(x,y)),multiply(x,y));x,y");
+        interpret("sum(1,1)");
+        //println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("a").unwrap().run(vec![1.0, 2.0]));
     }
 }
+
 
 //LATER
 //global variables
