@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use once_cell::sync::Lazy;
 use crate::basic_functions::{BASIC_FUNCTIONS, BasicFunc};
-use crate::variable_types::VariableType;
+use crate::variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
 
 /// Struktura reprezentująca niestandardową funkcję
 pub struct CustomFunc {
@@ -84,3 +84,111 @@ impl CustomFunc {
     }
 }
 
+unsafe fn recursive_variable_creator(recipe: &str) -> VariableType {
+    if let Some(pos) = recipe.find('(') {
+        let function_name = &recipe[..pos];
+        let args_str = &recipe[pos + 1..recipe.len() - 1];
+
+        let mut args = Vec::new();
+        let mut current_arg = String::new();
+        let mut parentheses_count = 0;
+
+        for c in args_str.chars() {
+            match c {
+                ',' if parentheses_count == 0 => {
+                    args.push(current_arg.trim().to_string());
+                    current_arg = String::new();
+                }
+                '(' => {
+                    parentheses_count += 1;
+                    current_arg.push(c);
+                }
+                ')' => {
+                    parentheses_count -= 1;
+                    current_arg.push(c);
+                }
+                _ => {
+                    current_arg.push(c);
+                }
+            }
+        }
+
+        if !current_arg.trim().is_empty() {
+            args.push(current_arg.trim().to_string());
+        }
+
+        let mut parsed_variables = Vec::new();
+        for arg in args {
+            parsed_variables.push(recursive_variable_creator(&arg));
+        }
+
+        if let Some(&basic_func) = BASIC_FUNCTIONS.get(function_name) {
+            VariableType::BasicFuncWithVars(Arc::new(BasicFuncWithVars::new(basic_func, parsed_variables)))
+        } else if let Some(custom_func) = CUSTOM_FUNC_MAP.get(function_name) {
+            VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(Arc::clone(custom_func), parsed_variables)))
+        } else {
+            panic!("Unknown function: {}", function_name);
+        }
+    } else {
+        if let Ok(num) = recipe.replace(")", "").parse::<f64>() {
+            VariableType::Value(num)
+        } else {
+            VariableType::Variable(recipe.replace(")", "").to_string())
+        }
+    }
+}
+
+unsafe fn create_custom_function(
+    name: Option<String>,
+    recipe: &str,
+    variable_names: Vec<String>
+) -> Arc<CustomFunc> {
+    let function_variable_type = recursive_variable_creator(recipe);
+
+    if let VariableType::BasicFuncWithVars(basic_func_wrapper) = function_variable_type {
+        let basic_func = basic_func_wrapper.basic_func;
+        let variables = basic_func_wrapper.func_variables.clone();
+
+        let custom_func = Arc::new(CustomFunc::new(
+            basic_func,
+            variables,
+            variable_names,
+        ));
+
+        if let Some(name) = name {
+            CUSTOM_FUNC_MAP.insert(name, custom_func.clone());
+        }
+        custom_func
+    } else {
+        panic!("Unexpected error in creating custom function");
+    }
+}
+
+/// Funkcja interpretująca pełne równanie i tworząca niestandardową funkcję
+pub unsafe fn interpret(full_equation: &str) -> Arc<CustomFunc> {
+    let parts: Vec<&str> = full_equation.split(|c: char| c == '=' || c == ';').collect();
+
+    match parts.len() {
+        3 => {
+            let name = parts[0].trim().to_string();
+            let recipe = format!("pass({})", parts[1].trim());
+            let variable_names = parts[2].trim().split(',').map(String::from).collect();
+            create_custom_function(Some(name), &recipe, variable_names)
+        }
+        2 if full_equation.contains('=') => {
+            let name = parts[0].trim().to_string();
+            let recipe = format!("pass({})", parts[1].trim());
+            create_custom_function(Some(name), &recipe, Vec::new())
+        }
+        2 => {
+            let recipe = format!("pass({})", parts[0].trim());
+            let variable_names = parts[1].trim().split(',').map(String::from).collect();
+            create_custom_function(None, &recipe, variable_names)
+        }
+        1 => {
+            let recipe = format!("pass({})", parts[0].trim());
+            create_custom_function(None, &recipe, Vec::new())
+        }
+        _ => panic!("Invalid equation format"),
+    }
+}
