@@ -18,7 +18,6 @@ fn difference(args: &[f64]) -> Vec<f64> {
 }
 
 fn multiply(args: &[f64]) -> Vec<f64> {
-    println!("MULARGS:{:?}",args);
     if args.len() != 2 {
         panic!("Function 'multiply' expects exactly 2 arguments");
     }
