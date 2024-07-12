@@ -1,6 +1,7 @@
 mod basic_functions;
 mod custom_functions;
 mod variable_types;
+mod GlobalVariables;
 
 use basic_functions::BasicFunc;
 use custom_functions::CustomFunc;
@@ -8,22 +9,45 @@ use variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
 use std::sync::Arc;
 use std::time::Instant;
 use crate::basic_functions::BASIC_FUNCTIONS;
+use crate::custom_functions::{CUSTOM_FUNC_MAP, interpret};
+use crate::GlobalVariables::{create_global_variable, create_global_variable_text, get_by_name};
+
+fn main() {
+    unsafe {
+        interpret("a=sum(sum(1,sum(x,y)),multiply(x,y));x,y");
+        // interpret("sum(1,1)");
+         println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("a").unwrap().run(vec![1.0, 2.0]));
+
+        let custom_func = CUSTOM_FUNC_MAP.get("a").unwrap().clone();
+
+        // Create global variables
+        //create_global_variable("global_var1".to_string(), GlobalVariable::new((**func_arc).clone(), vec![1.0, 2.0]);
+        let declaration = "global_var2 = a(3.0, 4.0)".to_string();
+        unsafe {
+            create_global_variable_text(declaration);
+        }
+
+        // Retrieve and print the values of the global variables
+        //println!("GLOBAL VAR1: {:?}", get_by_name("global_var1".to_string()));
+        println!("GLOBAL VAR2: {:?}", get_by_name("global_var2".to_string()));
+
+        interpret("b=sum(global_var2,x);x");
+        println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("b").unwrap().run(vec![1.0]));
 
 
-// fn main() {
-//     unsafe {
-//         interpret("a=sum(sum(1,sum(x,y)),multiply(x,y));x,y");
-//         // interpret("sum(1,1)");
-//          println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("a").unwrap().run(vec![1.0, 2.0]));
-//     }
-// }
+    }
+}
 
 
 
 //LATER
-//global variables
+//global variables having as a base list of values , function and variables
 //why must I always use pass for nonbasic functions
-
+//external compiler of +,-,*,/,**,//,++,--
+//Extrernal compiler of recursion, by string replacment in pre compilng
+//cash
+//precompilation into files
+//LateX document prep
 
 // // CORECTNESS TEST
 // fn main() {
@@ -101,316 +125,316 @@ use crate::basic_functions::BASIC_FUNCTIONS;
 // }
 // }
 
-//speed test
-fn main() {
-    unsafe {
-        let value1 = VariableType::Variable("x".to_string());
-        let value2 = VariableType::Variable("y".to_string());
-
-        let variables1 = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables1, // Pass variables1 without cloning
-            vec!["x".to_string(),"y".to_string()],
-        ));
-
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        println!("{:?}", result);
-
-
-
-        let instance1 = my_instance1.clone();
-        let instance2 = my_instance1.clone();
-
-        let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
-        let variables = vec![value1.clone(), value2.clone()];
-        let my_instance1 = Arc::new(CustomFunc::new(
-            BASIC_FUNCTIONS.get("sum").unwrap().clone(),
-            variables,
-            vec!["x".to_string(),"y".to_string()],
-        ));
-
-
-
-
-        let now = Instant::now();
-        let result = my_instance1.run(vec![1.0, 1.0]);
-        let elapsed = now.elapsed();
-        println!("Time taken by function: {:.2?}", elapsed);
-        println!("{:?}", result);
-    }
-}
+// //speed test
+// fn main() {
+//     unsafe {
+//         let value1 = VariableType::Variable("x".to_string());
+//         let value2 = VariableType::Variable("y".to_string());
+//
+//         let variables1 = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables1, // Pass variables1 without cloning
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         println!("{:?}", result);
+//
+//
+//
+//         let instance1 = my_instance1.clone();
+//         let instance2 = my_instance1.clone();
+//
+//         let value1 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance1.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let value2 = VariableType::CustomFuncWithVars(Arc::new(CustomFuncWithVars::new(instance2.clone(), vec![VariableType::Variable("x".to_string()), VariableType::Variable("y".to_string())])));
+//         let variables = vec![value1.clone(), value2.clone()];
+//         let my_instance1 = Arc::new(CustomFunc::new(
+//             BASIC_FUNCTIONS.get("sum").unwrap().clone(),
+//             variables,
+//             vec!["x".to_string(),"y".to_string()],
+//         ));
+//
+//
+//
+//
+//         let now = Instant::now();
+//         let result = my_instance1.run(vec![1.0, 1.0]);
+//         let elapsed = now.elapsed();
+//         println!("Time taken by function: {:.2?}", elapsed);
+//         println!("{:?}", result);
+//     }
+//}
 

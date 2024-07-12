@@ -2,9 +2,11 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use once_cell::sync::Lazy;
 use crate::basic_functions::{BASIC_FUNCTIONS, BasicFunc};
+use crate::GlobalVariables::get_by_name;
 use crate::variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
 
 /// Struktura reprezentująca niestandardową funkcję
+#[derive(Clone)]
 pub struct CustomFunc {
     primary_func: BasicFunc,                  // Główna funkcja podstawowa
     func_variables: Vec<VariableType>,        // Lista zmiennych funkcji
@@ -44,6 +46,10 @@ impl CustomFunc {
                 VariableType::Variable(variable) => {
                     if let Some(value) = mapped_provided_variables.get(variable) {
                         processed_variables.push(*value);
+                    }
+                    else
+                    {
+                        processed_variables.extend(get_by_name(variable.to_string()));
                     }
                 }
                 VariableType::BasicFuncWithVars(b_func) => {

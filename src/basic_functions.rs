@@ -39,6 +39,8 @@ fn divide(args: &[f64]) -> Vec<f64> {
     vec![args[0] / args[1]]
 }
 
+//
+
 /// Funkcja zwracająca argumenty bez zmian
 fn pass(args: &[f64]) -> Vec<f64> {
     args.to_vec()
