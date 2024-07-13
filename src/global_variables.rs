@@ -1,7 +1,10 @@
 use std::collections::HashMap;
+use std::fs::OpenOptions;
+use std::io::prelude::*;
+use std::string::ToString;
 use std::sync::{Arc, Mutex};
 use once_cell::sync::Lazy;
-use crate::custom_functions::{CUSTOM_FUNC_MAP, CustomFunc};
+use crate::custom_functions::{CUSTOM_FUNC_MAP, CustomFunc, SAVE_FILE_NAME};
 
 pub struct GlobalVariable {
     pub func: CustomFunc,
@@ -28,8 +31,8 @@ impl GlobalVariable {
         self.result.clone()
     }
 
-    pub fn setNotUpdated(&mut self) {
-        self.updated = true;
+    pub fn set_not_updated(&mut self) {
+        self.updated = false;
     }
 }
 
@@ -49,7 +52,7 @@ pub fn create_global_variable(name: String, func: CustomFunc, variables: Vec<f64
     GLOBAL_VARIABLES.lock().unwrap().insert(name, global_variable);
 }
 
-pub unsafe fn create_global_variable_text(declaration: String) {
+pub unsafe fn create_global_variable_text(declaration: String, save_into_file: bool) {
     // Example: name=nameOfFunction(1,2,3,4)
     let parts: Vec<&str> = declaration.split('=').collect();
     let name = parts[0].trim().to_string();
@@ -66,8 +69,15 @@ pub unsafe fn create_global_variable_text(declaration: String) {
         .collect();
 
     let func = (**func_arc).clone();
-    let variables = variables;
+
+    if save_into_file {
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(SAVE_FILE_NAME)
+            .expect("Unable to open file");
+        writeln!(file, "{}", "V:".to_string()+&declaration).expect("Unable to write to file");
+    }
 
     create_global_variable(name, func, variables);
 }
-

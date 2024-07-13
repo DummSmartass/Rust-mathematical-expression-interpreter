@@ -1,8 +1,10 @@
 use std::collections::HashMap;
+use std::fs::OpenOptions;
+use std::io::Write; // Import the Write trait
 use std::sync::Arc;
 use once_cell::sync::Lazy;
 use crate::basic_functions::{BASIC_FUNCTIONS, BasicFunc};
-use crate::GlobalVariables::get_by_name;
+use crate::global_variables::get_by_name;
 use crate::variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
 
 /// Struktura reprezentująca niestandardową funkcję
@@ -17,6 +19,8 @@ pub struct CustomFunc {
 pub(crate) static mut CUSTOM_FUNC_MAP: Lazy<HashMap<String, Arc<CustomFunc>>> = Lazy::new(|| {
     HashMap::new()
 });
+
+pub static SAVE_FILE_NAME: &str = "REMEMBERED.txt";
 
 impl CustomFunc {
     /// Tworzy nową instancję CustomFunc
@@ -171,7 +175,7 @@ unsafe fn create_custom_function(
 }
 
 /// Funkcja interpretująca pełne równanie i tworząca niestandardową funkcję
-pub unsafe fn interpret(full_equation: &str) -> Arc<CustomFunc> {
+pub unsafe fn interpret(full_equation: &str, save_into_file: bool) -> Arc<CustomFunc> {
     let parts: Vec<&str> = full_equation.split(|c: char| c == '=' || c == ';').collect();
 
     match parts.len() {
@@ -179,20 +183,60 @@ pub unsafe fn interpret(full_equation: &str) -> Arc<CustomFunc> {
             let name = parts[0].trim().to_string();
             let recipe = format!("pass({})", parts[1].trim());
             let variable_names = parts[2].trim().split(',').map(String::from).collect();
+
+            if save_into_file {
+                let mut file = OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .open(SAVE_FILE_NAME)
+                    .expect("Unable to open file");
+                writeln!(file, "{}", full_equation).expect("Unable to write to file");
+            }
+
             create_custom_function(Some(name), &recipe, variable_names)
         }
         2 if full_equation.contains('=') => {
             let name = parts[0].trim().to_string();
             let recipe = format!("pass({})", parts[1].trim());
+
+            if save_into_file {
+                let mut file = OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .open(SAVE_FILE_NAME)
+                    .expect("Unable to open file");
+                writeln!(file, "{}", full_equation).expect("Unable to write to file");
+            }
+
             create_custom_function(Some(name), &recipe, Vec::new())
         }
         2 => {
             let recipe = format!("pass({})", parts[0].trim());
             let variable_names = parts[1].trim().split(',').map(String::from).collect();
+
+            if save_into_file {
+                let mut file = OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .open(SAVE_FILE_NAME)
+                    .expect("Unable to open file");
+                writeln!(file, "{}", full_equation).expect("Unable to write to file");
+            }
+
             create_custom_function(None, &recipe, variable_names)
         }
         1 => {
             let recipe = format!("pass({})", parts[0].trim());
+
+            if save_into_file {
+                let mut file = OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .open(SAVE_FILE_NAME)
+                    .expect("Unable to open file");
+                writeln!(file, "{}", "V:".to_string()+&full_equation).expect("Unable to write to file");
+            }
+
             create_custom_function(None, &recipe, Vec::new())
         }
         _ => panic!("Invalid equation format"),
