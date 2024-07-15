@@ -20,7 +20,12 @@ pub(crate) static mut CUSTOM_FUNC_MAP: Lazy<HashMap<String, Arc<CustomFunc>>> = 
     HashMap::new()
 });
 
-pub static SAVE_FILE_NAME: &str = "REMEMBERED.txt";
+pub static mut SAVE_FILE_NAME: &str = "REMEMBERED.txt";
+
+pub unsafe fn set_save_file_name(new_name: &str) {
+    // Box the new name and leak it to get a static reference
+    SAVE_FILE_NAME = Box::leak(new_name.to_string().into_boxed_str());
+}
 
 impl CustomFunc {
     /// Tworzy nową instancję CustomFunc

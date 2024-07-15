@@ -9,7 +9,7 @@ use variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
 use std::sync::Arc;
 use std::time::Instant;
 use crate::basic_functions::BASIC_FUNCTIONS;
-use crate::custom_functions::{CUSTOM_FUNC_MAP, interpret, SAVE_FILE_NAME};
+use crate::custom_functions::{CUSTOM_FUNC_MAP, interpret, SAVE_FILE_NAME, set_save_file_name};
 use crate::global_variables::{create_global_variable, create_global_variable_text, get_by_name};
 
 use std::fs::File;
@@ -17,7 +17,7 @@ use std::io::{BufRead, BufReader};
 use std::sync::Mutex;
 
 
-pub fn load_remembered() {
+pub unsafe fn load_remembered() {
     let file = File::open(SAVE_FILE_NAME).expect("Unable to open file");
     let reader = BufReader::new(file);
 
@@ -43,7 +43,7 @@ pub fn load_remembered() {
 fn main() {
     unsafe {
         load_remembered();
-
+        
         //interpret("a=sum(sum(1,sum(x,y)),multiply(x,y));x,y",true);
         // interpret("sum(1,1)");
          println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("a").unwrap().run(vec![1.0, 2.0]));
@@ -63,7 +63,6 @@ fn main() {
 
         //interpret("b=sum(global_var2,x);x",true);
         println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("b").unwrap().run(vec![1.0]));
-
 
     }
 }
