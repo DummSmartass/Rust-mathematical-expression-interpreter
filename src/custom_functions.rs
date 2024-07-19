@@ -247,3 +247,26 @@ pub unsafe fn interpret(full_equation: &str, save_into_file: bool) -> Arc<Custom
         _ => panic!("Invalid equation format"),
     }
 }
+
+pub unsafe fn run_custom_logic() {
+    // Example interpretations
+    //interpret("a=sum(sum(1,sum(x,y)),multiply(x,y));x,y",true);
+    // interpret("sum(1,1)");
+    println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("a").unwrap().run(vec![1.0, 2.0]));
+
+    let custom_func = CUSTOM_FUNC_MAP.get("a").unwrap().clone();
+
+    // Create global variables
+    //create_global_variable("global_var1".to_string(), GlobalVariable::new((**func_arc).clone(), vec![1.0, 2.0]);
+    let declaration = "global_var2 = a(3.0, 4.0)".to_string();
+    // unsafe {
+    //     create_global_variable_text(declaration,true);
+    // }
+
+    // Retrieve and print the values of the global variables
+    //println!("GLOBAL VAR1: {:?}", get_by_name("global_var1".to_string()));
+    println!("GLOBAL VAR2: {:?}", get_by_name("global_var2".to_string()));
+
+    //interpret("b=sum(global_var2,x);x",true);
+    println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("b").unwrap().run(vec![1.0]));
+}

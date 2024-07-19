@@ -9,13 +9,12 @@ use variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
 use std::sync::Arc;
 use std::time::Instant;
 use crate::basic_functions::BASIC_FUNCTIONS;
-use crate::custom_functions::{CUSTOM_FUNC_MAP, interpret, SAVE_FILE_NAME, set_save_file_name};
+use crate::custom_functions::{CUSTOM_FUNC_MAP, interpret, SAVE_FILE_NAME, set_save_file_name, run_custom_logic};
 use crate::global_variables::{create_global_variable, create_global_variable_text, get_by_name};
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::sync::Mutex;
-
 
 pub unsafe fn load_remembered() {
     let file = File::open(SAVE_FILE_NAME).expect("Unable to open file");
@@ -39,33 +38,13 @@ pub unsafe fn load_remembered() {
     }
 }
 
-
 fn main() {
     unsafe {
         load_remembered();
-        
-        //interpret("a=sum(sum(1,sum(x,y)),multiply(x,y));x,y",true);
-        // interpret("sum(1,1)");
-         println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("a").unwrap().run(vec![1.0, 2.0]));
-
-        let custom_func = CUSTOM_FUNC_MAP.get("a").unwrap().clone();
-
-        // Create global variables
-        //create_global_variable("global_var1".to_string(), GlobalVariable::new((**func_arc).clone(), vec![1.0, 2.0]);
-        let declaration = "global_var2 = a(3.0, 4.0)".to_string();
-        // unsafe {
-        //     create_global_variable_text(declaration,true);
-        // }
-
-        // Retrieve and print the values of the global variables
-        //println!("GLOBAL VAR1: {:?}", get_by_name("global_var1".to_string()));
-        println!("GLOBAL VAR2: {:?}", get_by_name("global_var2".to_string()));
-
-        //interpret("b=sum(global_var2,x);x",true);
-        println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("b").unwrap().run(vec![1.0]));
-
+        run_custom_logic();
     }
 }
+
 
 
 
