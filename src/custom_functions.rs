@@ -1,10 +1,10 @@
 use std::collections::HashMap;
-use std::fs::OpenOptions;
-use std::io::Write; // Import the Write trait
+use std::fs::{File, OpenOptions};
+use std::io::{BufRead, BufReader, Write}; // Import the Write trait
 use std::sync::Arc;
 use once_cell::sync::Lazy;
 use crate::basic_functions::{BASIC_FUNCTIONS, BasicFunc};
-use crate::global_variables::get_by_name;
+use crate::global_variables::{create_global_variable_text, get_by_name};
 use crate::variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
 
 /// Struktura reprezentująca niestandardową funkcję
@@ -269,4 +269,26 @@ pub unsafe fn run_custom_logic() {
 
     //interpret("b=sum(global_var2,x);x",true);
     println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("b").unwrap().run(vec![1.0]));
+}
+
+pub unsafe fn load_remembered() {
+    let file = File::open(SAVE_FILE_NAME).expect("Unable to open file");
+    let reader = BufReader::new(file);
+
+    for line in reader.lines() {
+        let line = line.expect("Unable to read line");
+
+        if line.starts_with("V:") {
+            // Remove the "V:" prefix and create the global variable
+            let declaration = line[2..].trim().to_string();
+            unsafe {
+                create_global_variable_text(declaration, false);
+            }
+        } else {
+            // Assume it's a function declaration
+            unsafe {
+                interpret(&line, false);
+            }
+        }
+    }
 }

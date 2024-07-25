@@ -9,34 +9,12 @@ use variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
 use std::sync::Arc;
 use std::time::Instant;
 use crate::basic_functions::BASIC_FUNCTIONS;
-use crate::custom_functions::{CUSTOM_FUNC_MAP, interpret, SAVE_FILE_NAME, set_save_file_name, run_custom_logic};
+use crate::custom_functions::{CUSTOM_FUNC_MAP, interpret, SAVE_FILE_NAME, set_save_file_name, run_custom_logic, load_remembered};
 use crate::global_variables::{create_global_variable, create_global_variable_text, get_by_name};
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::sync::Mutex;
-
-pub unsafe fn load_remembered() {
-    let file = File::open(SAVE_FILE_NAME).expect("Unable to open file");
-    let reader = BufReader::new(file);
-
-    for line in reader.lines() {
-        let line = line.expect("Unable to read line");
-
-        if line.starts_with("V:") {
-            // Remove the "V:" prefix and create the global variable
-            let declaration = line[2..].trim().to_string();
-            unsafe {
-                create_global_variable_text(declaration, false);
-            }
-        } else {
-            // Assume it's a function declaration
-            unsafe {
-                interpret(&line, false);
-            }
-        }
-    }
-}
 
 fn main() {
     unsafe {
