@@ -2,7 +2,8 @@ mod basic_functions;
 mod custom_functions;
 mod variable_types;
 mod global_variables;
-
+mod server;
+mod client;
 
 use basic_functions::BasicFunc;
 use custom_functions::CustomFunc;
@@ -24,15 +25,45 @@ use tokio::task;
 use std::time::Duration;
 use tokio::time;
 
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Start the server in a separate task
+    let server_handle = task::spawn(async {
+        server::run_server().await.unwrap();
+    });
 
+    // Give the server a moment to start
+    time::sleep(Duration::from_millis(100)).await;
 
+    // Run the first client
+    println!("Running first client:");
+    client::run_client().await?;
 
-fn main() {
-    unsafe {
-        load_remembered();
-        run_custom_logic();
-    }
+    // Run the first client again
+    println!("Running first client again:");
+    client::run_client().await?;
+
+    // Run the second client
+    println!("Running second client:");
+    client::run_client().await?;
+
+    // Run the third client
+    println!("Running third client:");
+    client::run_client().await?;
+
+    // Stop the server
+    server_handle.abort();
+
+    Ok(())
 }
+
+
+// fn main() {
+//     unsafe {
+//         load_remembered();
+//         run_custom_logic();
+//     }
+// }
 
 
 
