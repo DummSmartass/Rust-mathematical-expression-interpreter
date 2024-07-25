@@ -3,6 +3,7 @@ mod custom_functions;
 mod variable_types;
 mod global_variables;
 
+
 use basic_functions::BasicFunc;
 use custom_functions::CustomFunc;
 use variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
@@ -10,11 +11,21 @@ use std::sync::Arc;
 use std::time::Instant;
 use crate::basic_functions::BASIC_FUNCTIONS;
 use crate::custom_functions::{CUSTOM_FUNC_MAP, interpret, SAVE_FILE_NAME, set_save_file_name, run_custom_logic, load_remembered};
-use crate::global_variables::{create_global_variable, create_global_variable_text, get_by_name};
+use crate::global_variables::{create_global_variable, create_global_variable_text, get_variable_by_name};
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::sync::Mutex;
+
+
+// main.rs
+
+use tokio::task;
+use std::time::Duration;
+use tokio::time;
+
+
+
 
 fn main() {
     unsafe {

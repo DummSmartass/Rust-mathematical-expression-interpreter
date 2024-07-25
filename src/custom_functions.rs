@@ -4,7 +4,7 @@ use std::io::{BufRead, BufReader, Write}; // Import the Write trait
 use std::sync::Arc;
 use once_cell::sync::Lazy;
 use crate::basic_functions::{BASIC_FUNCTIONS, BasicFunc};
-use crate::global_variables::{create_global_variable_text, get_by_name};
+use crate::global_variables::{create_global_variable_text, get_variable_by_name, set_all_not_updated, set_not_updated_by_name};
 use crate::variable_types::{VariableType, CustomFuncWithVars, BasicFuncWithVars};
 
 /// Struktura reprezentująca niestandardową funkcję
@@ -22,8 +22,8 @@ pub(crate) static mut CUSTOM_FUNC_MAP: Lazy<HashMap<String, Arc<CustomFunc>>> = 
 
 pub static mut SAVE_FILE_NAME: &str = "REMEMBERED.txt";
 
-pub unsafe fn set_save_file_name(new_name: &str) {
-    // Box the new name and leak it to get a static reference
+pub unsafe fn set_save_file_name(new_name: &str){
+    let _file = OpenOptions::new().create(true).write(true).open(new_name);
     SAVE_FILE_NAME = Box::leak(new_name.to_string().into_boxed_str());
 }
 
@@ -58,7 +58,7 @@ impl CustomFunc {
                     }
                     else
                     {
-                        processed_variables.extend(get_by_name(variable.to_string()));
+                        processed_variables.extend(get_variable_by_name(variable.to_string()));
                     }
                 }
                 VariableType::BasicFuncWithVars(b_func) => {
@@ -249,26 +249,37 @@ pub unsafe fn interpret(full_equation: &str, save_into_file: bool) -> Arc<Custom
 }
 
 pub unsafe fn run_custom_logic() {
+    //loads functions and variables from current save file
+    load_remembered();
     // Example interpretations
-    //interpret("a=sum(sum(1,sum(x,y)),multiply(x,y));x,y",true);
-    // interpret("sum(1,1)");
-    println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("a").unwrap().run(vec![1.0, 2.0]));
+    interpret("a=sum(sum(1,sum(x,y)),multiply(x,y));x,y",true);//a= gives name of function, true puts it in permanent storage
+    println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("a").unwrap().run(vec![1.0, 2.0]));//retrieval and usage of function with variables 1 and 2 as x and y respectively
 
-    let custom_func = CUSTOM_FUNC_MAP.get("a").unwrap().clone();
+    let sumOf2 = interpret("sum(1,1)",false);//creation of temporary function (name not needed), false doesnt try to save it (if it tried it wouldnt work)
+    println!("RESULT: {:?}", sumOf2.run(vec![]));//it can be used within this session (in a server probably there should bea map of function created for the session)
 
-    // Create global variables
-    //create_global_variable("global_var1".to_string(), GlobalVariable::new((**func_arc).clone(), vec![1.0, 2.0]);
+    //after loading function it should switch file to something else than defualt to not corrupt core file, considering variables and functions can be ovverriten
+    set_save_file_name("other_file.txt");//changing save file for the session(so a) you can get them back if needed b) youcan save functions and variables withought imacting core file())
+
+    set_save_file_name("REMEMBERED.txt");//changing save file back to default(it should be the option)
+
+
+    // Create global variable (function with predeterment variables that holds value and if it needs restarting it just automatically runs function)
     let declaration = "global_var2 = a(3.0, 4.0)".to_string();
-    // unsafe {
-    //     create_global_variable_text(declaration,true);
-    // }
+    unsafe {
+        create_global_variable_text(declaration,true);//once again true saves it in permanent storage, false makes it only useful here
+    }
 
     // Retrieve and print the values of the global variables
-    //println!("GLOBAL VAR1: {:?}", get_by_name("global_var1".to_string()));
-    println!("GLOBAL VAR2: {:?}", get_by_name("global_var2".to_string()));
+    println!("GLOBAL VAR2: {:?}", get_variable_by_name("global_var2".to_string()));
 
-    //interpret("b=sum(global_var2,x);x",true);
+    //here showcase that you can retrive functions and variables from different sessions
     println!("RESULT: {:?}", CUSTOM_FUNC_MAP.get("b").unwrap().run(vec![1.0]));
+    println!("RESULT: {:?}", get_variable_by_name("global_var3".to_string()));
+
+
+    set_not_updated_by_name("global_var3");//sets specific variable as not updated
+    set_all_not_updated();//sets ALL variables as not updated
 }
 
 pub unsafe fn load_remembered() {

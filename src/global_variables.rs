@@ -40,7 +40,7 @@ static GLOBAL_VARIABLES: Lazy<Mutex<HashMap<String, Arc<Mutex<GlobalVariable>>>>
     Mutex::new(HashMap::new())
 });
 
-pub fn get_by_name(name: String) -> Vec<f64> {
+pub fn get_variable_by_name(name: String) -> Vec<f64> {
     let global_variables = GLOBAL_VARIABLES.lock().unwrap();
     let chosen_variable_arc = global_variables.get(&name).expect("Variable not found");
     let mut chosen_variable = chosen_variable_arc.lock().unwrap();
@@ -81,3 +81,23 @@ pub unsafe fn create_global_variable_text(declaration: String, save_into_file: b
 
     create_global_variable(name, func, variables);
 }
+
+pub fn set_all_not_updated() {
+    let global_variables = GLOBAL_VARIABLES.lock().unwrap();
+    for global_var_arc in global_variables.values() {
+        let mut global_var = global_var_arc.lock().unwrap();
+        global_var.set_not_updated();
+    }
+}
+
+pub fn set_not_updated_by_name(name: &str) {
+    let global_variables = GLOBAL_VARIABLES.lock().unwrap();
+    if let Some(global_var_arc) = global_variables.get(name) {  // No need to use &name here
+        let mut global_var = global_var_arc.lock().unwrap();
+        global_var.set_not_updated();
+    } else {
+        panic!("Variable not found");
+    }
+}
+
+
