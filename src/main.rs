@@ -15,7 +15,6 @@ use crate::custom_functions::{CUSTOM_FUNC_MAP, interpret, SAVE_FILE_NAME, set_sa
 use crate::global_variables::{create_global_variable, create_global_variable_text, get_variable_by_name};
 
 use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::sync::Mutex;
 
 
@@ -25,6 +24,11 @@ use tokio::task;
 use std::time::Duration;
 use tokio::time;
 
+
+use tokio::net::TcpStream;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use std::io::{self, BufRead, BufReader};
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Start the server in a separate task
@@ -33,29 +37,43 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     // Give the server a moment to start
-    time::sleep(Duration::from_millis(100)).await;
+    time::sleep(Duration::from_millis(300)).await;
 
-    // Run the first client
-    println!("Running first client:");
-    client::run_client().await?;
-
-    // Run the first client again
-    println!("Running first client again:");
-    client::run_client().await?;
-
-    // Run the second client
-    println!("Running second client:");
-    client::run_client().await?;
-
-    // Run the third client
-    println!("Running third client:");
-    client::run_client().await?;
+    // Run the client with input from stdin
+    println!("Running client:");
+    run_client().await?;
 
     // Stop the server
     server_handle.abort();
 
     Ok(())
 }
+
+pub async fn run_client() -> Result<(), Box<dyn std::error::Error>> {
+    let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
+
+    // Read input from stdin
+    let stdin = io::stdin();
+    let reader = BufReader::new(stdin);
+
+    for line in reader.lines() {
+        let text = line?;
+
+        // Send the text
+        stream.write_all(text.as_bytes()).await?;
+        stream.write_all(b"\n").await?; // Use newline as delimiter
+
+        // Read the reversed response
+        let mut response = vec![0; 1024];
+        let n = stream.read(&mut response).await?;
+        let response_text = String::from_utf8_lossy(&response[..n]).trim_end().to_string();
+
+        println!("Received reversed text: {}", response_text);
+    }
+
+    Ok(())
+}
+
 
 
 // fn main() {
